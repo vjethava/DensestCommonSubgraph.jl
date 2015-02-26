@@ -1,5 +1,12 @@
 using DensestCommonSubgraph
-using Base.Test
+using FactCheck
 
 # write your own tests here
-@test 1 == 1
+facts("Testing DensestCommonSubgraph") do 
+  context("BinaryToGray conversion") do
+    include("test_bitstr.jl")
+    n = 10
+    test_binary_to_gray(n)
+  end
+end
+
