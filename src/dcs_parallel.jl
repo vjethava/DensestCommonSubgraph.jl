@@ -1,3 +1,5 @@
+export dcs_parallel
+
 using Devectorize
 
 function reduce_dcs(sA::(Array{Int64, 1}, Float64), sB::(Array{Int64, 1}, Float64))

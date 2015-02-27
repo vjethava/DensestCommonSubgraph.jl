@@ -1,4 +1,4 @@
-export find_set_bits,  gray_to_binary, binary_to_gray, find_set_bits!, binary_to_gray!, int_to_binary_bool!
+export find_set_bits,  gray_to_binary, binary_to_gray
 
 function find_set_bits!{T<:Number}(S::Array{T, 1}, code::Array{Bool, 1})
   ns = 0

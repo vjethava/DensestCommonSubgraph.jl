@@ -50,7 +50,7 @@ function dcs_exhaustive{T}(G::Array{SparseMatrixCSC{T, Int64}, 1})
         end
         curr_ne[k] = curr_ne[k] + m_sign  * delta_deg
         curr_deg[k] = curr_ne[k] / curr_num_nodes
-  #      println("G[$k] j: $j: $(curr_ne[k]), $(curr_deg[k])")
+        #      println("G[$k] j: $j: $(curr_ne[k]), $(curr_deg[k])")
       end
     end
     @devec curr_min_deg = minimum(curr_deg)
@@ -69,7 +69,7 @@ function dcs_exhaustive{T}(G::Array{SparseMatrixCSC{T, Int64}, 1})
   binary_to_gray!(curr_state, binary_state)
   curr_num_nodes = find_set_bits!(curr_nodes, curr_state)
   opt_S = curr_nodes[1:curr_num_nodes]
-  println("S: $opt_S min_deg: $opt_deg")
+  # println("S: $opt_S min_deg: $opt_deg")
   return opt_S , opt_deg
 end
 

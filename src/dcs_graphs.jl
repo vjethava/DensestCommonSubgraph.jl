@@ -23,10 +23,10 @@ function planted_clique(n::Integer, p::Real, k::Integer; is_directed=false)
   return A
 end
 
-function get_dcs_test_instance(n::Integer = 15, p::Real = 0.1)
-  if VERSION.minor == 3
+function get_dcs_test_instance(n::Integer = 15, p::Real = 0.1, k::Integer = 0)
+  if k==0 && VERSION.minor == 3
     k = max(5, iceil(sqrt(n)))
-  else
+  elseif k==0
     k = max(5, ceil(Integer, sqrt(n)))
   end
   
