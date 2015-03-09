@@ -1,5 +1,6 @@
-export dcs_parallel
 
+export dcs_parallel
+using DensestCommonSubgraph
 using Devectorize
 
 function reduce_dcs(sA::(Array{Int64, 1}, Float64), sB::(Array{Int64, 1}, Float64))
@@ -11,7 +12,7 @@ function reduce_dcs(sA::(Array{Int64, 1}, Float64), sB::(Array{Int64, 1}, Float6
 end
 
 function dcs_parallel{T}(G::Array{SparseMatrixCSC{T, Int64}, 1}, n::Number)
-  @parallel reduce_dcs for j=[1:n;] 
+  @parallel reduce_dcs for j=[1:n;]
     dcs_exhaustive_worker(G, n, j)
   end
 end
@@ -113,7 +114,9 @@ function dcs_exhaustive_worker{T}(G::Array{SparseMatrixCSC{T, Int64}, 1}, num_pa
   binary_to_gray!(curr_state, binary_state)
   curr_num_nodes = find_set_bits!(curr_nodes, curr_state)
   opt_S = curr_nodes[1:curr_num_nodes]
-  println("$(lpad(curr_part, 3))/$(rpad(num_parts, 3)) min_deg: $(rpad(opt_deg, 25)) S: $opt_S")
+  # println("$(lpad(curr_part, 3))/$(rpad(num_parts, 3)) min_deg: $(rpad(opt_deg, 25)) S: $opt_S")
+
+
   return opt_S , opt_deg
 end
 

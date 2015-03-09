@@ -1,7 +1,8 @@
-export dcs_lp, charikar_lp, dcs_charikar_lp, fast_dcs_lp, faster_dcs_lp
-
+export dcs_lp, charikar_lp, dcs_lp_extract, extract_primal_solution
+export LP_METHODS
 using Convex
 using SCS
+LP_METHODS=["DCS"; "MIN"; "AVG"]
 
 set_default_solver(SCSSolver(verbose=0))
 
@@ -12,28 +13,28 @@ function dcs_convert{T}(G::Array{SparseMatrixCSC{T, Int64}, 1})
     push!(H, similar(G[j], Float64))
     ii, jj = findn(G[j])
     for k=1:length(ii)
-       H[j][ii[k], jj[k] ]  = 1.0 
+       H[j][ii[k], jj[k] ]  = 1.0
     end
   end
   return H
 end
 
 
-function dcs_lp{T}(H::Array{SparseMatrixCSC{T, Int64}, 1})
+function old_dcs_lp{T}(H::Array{SparseMatrixCSC{T, Int64}, 1})
   G = dcs_convert(H)
   m = length(G)
   n = size(G[1], 1)
   X = Convex.Variable[]
   for j=1:m
     push!(X, Variable(n, n,Positive()))
-  end 
+  end
   Y = Variable(n, Positive())
   t = Variable()
   z = sum(Y)
   constraints = Convex.Constraint[]
   push!(constraints, z <= 1.0)
-    
-    
+
+
   for j=1:m
     push!(constraints, trace(G[j] * X[j]) >= t)
     ii, jj = findn(G[j])
@@ -48,18 +49,18 @@ function dcs_lp{T}(H::Array{SparseMatrixCSC{T, Int64}, 1})
   problem  = maximize(t, constraints);
   solve!(problem);
   # println("Optval: ", problem.optval)
-  return problem 
+  return problem, X, Y, t
 end
 
 
-function fast_dcs_lp{T}(G::Array{SparseMatrixCSC{T, Int64}, 1})
+function dcs_lp{T}(G::Array{SparseMatrixCSC{T, Int64}, 1})
   m = length(G)
   n = size(G[1], 1)
   nz = Int64[]
-  @inbounds begin 
+  @inbounds begin
     iv = {}
-    jv = {} 
-    gv = {} 
+    jv = {}
+    gv = {}
     for j=1:m
       ii, jj= findn(G[j])
       push!(iv, ii)
@@ -69,7 +70,7 @@ function fast_dcs_lp{T}(G::Array{SparseMatrixCSC{T, Int64}, 1})
       for k=1:length(ii)
         ss[k] = G[j][ii[k], jj[k] ]
       end
-      push!(gv, ss)    
+      push!(gv, ss)
     end
     ni = deepcopy(nz)
     insert!(ni, 1, 1)
@@ -81,11 +82,11 @@ function fast_dcs_lp{T}(G::Array{SparseMatrixCSC{T, Int64}, 1})
 
     Y = Variable(n, Positive())
     t = Variable()
-    z = sum(Y)
+    w = sum(Y)
     constraints = Convex.Constraint[]
-    push!(constraints, z <= 1.0)
-  
-  
+    push!(constraints, w <= 1.0)
+
+
     for j=1:m
       cb = ni[j]
       ce = ni[j+1]-1
@@ -94,7 +95,7 @@ function fast_dcs_lp{T}(G::Array{SparseMatrixCSC{T, Int64}, 1})
       # @assert cb >= 1
       # @assert ce <= length(X)
       push!(constraints, sum(X[cb:ce] .* gv[j] ) >= t)
-      # @assert length(gv[j]) == nz[j] 
+      # @assert length(gv[j]) == nz[j]
       for k=1:nz[j]
         crow = iv[j][k]
         ccol = jv[j][k]
@@ -105,24 +106,42 @@ function fast_dcs_lp{T}(G::Array{SparseMatrixCSC{T, Int64}, 1})
         # println("j: $j X[$ci] <= Y[$crow], Y[$ccol]")
       end
     end
-  end 
+  end
   problem  = maximize(t, constraints);
   solve!(problem);
-  # println("Optval: ", problem.optval)
-  return problem 
-end
 
+  Z = SparseMatrixCSC{Float64, Int64}[]
+  typeof(Z)
+  for j=1:m
+    push!(Z, spzeros(Float64, n, n))
+  end
+  for j=1:m
+    for k=1:nz[j]
+      crow = iv[j][k]
+      ccol = jv[j][k]
+      ci = ni[j] - 1 + k
+      # @assert crow >= 1 && crow <= n
+      # @assert ccol >= 1 && ccol <= n
+      # @assert G[j][crow, ccol] != 0
+      # println(X.value[ci])
+      Z[j][crow, ccol] = X.value[ci]
+    end
+  end
+
+  # println("Optval: ", problem.optval)
+  return problem, Z, Y.value, t.value
+end
 
 function faster_dcs_lp{T}(G::Array{SparseMatrixCSC{T, Int64}, 1})
   m = length(G)
   n = size(G[1], 1)
   nz = Int64[]
-  @inbounds begin 
+  @inbounds begin
     for j=1:m
       cval = nnz(G[j])
       push!(nz, cval)
     end
-  
+
     ni = deepcopy(nz)
     insert!(ni, 1, 1)
     ni = cumsum(ni)
@@ -133,8 +152,8 @@ function faster_dcs_lp{T}(G::Array{SparseMatrixCSC{T, Int64}, 1})
     z = sum(Y)
     constraints = Convex.Constraint[]
     push!(constraints, z <= 1.0)
-  
-  
+
+
     for j=1:m
       cb = ni[j]
       ce = (ni[j+1]-1)
@@ -157,7 +176,7 @@ function faster_dcs_lp{T}(G::Array{SparseMatrixCSC{T, Int64}, 1})
   end
   problem  = maximize(t, constraints);
   solve!(problem);
-  return problem 
+  return problem, X, Y, t
 end
 
 
@@ -171,7 +190,7 @@ function charikar_lp{T}(G::SparseMatrixCSC{T, Int64})
   constraints = Convex.Constraint[]
 
   push!(constraints, sum(Y) <= 1)
-  
+
   ii, jj = findn(G)
   for k=1:length(ii)
     crow = ii[k]
@@ -180,25 +199,58 @@ function charikar_lp{T}(G::SparseMatrixCSC{T, Int64})
     push!(constraints, X[crow, ccol] <= Y[ccol])
   end
 
-  problem = maximize(trace(G * X), constraints); 
+  problem = maximize(trace(G * X), constraints);
   solve!(problem);
-  return problem 
+  t= problem.optval
+  return problem, X.value, Y.value, t
 end
 
-function dcs_charikar_lp{T}(H::Array{SparseMatrixCSC{T, Int64}, 1})
-  m = length(H)
-  n = size(H[1], 1)
-  G = spzeros(T, n, n)
 
-  ii, jj = findn(H[1])
-  for k=1:length(ii)
-    cr = ii[k]
-    cc = jj[k]
-    G[cr, cc] = H[1][cr, cc]
-    for j=2:m
-      G[cr, cc] = min(G[cr, cc], H[j][cr, cc])
-    end
+function extract_primal_solution(Y)
+  V = [j > 1e-6 for j in Y]
+  S = find(V)
+  return S
+end
+
+# Uses LP primal solution to find dense common subgraph
+#
+#
+function dcs_lp_extract(G::GraphVec; method::String = "DCS" )
+  m = length(G)
+  @assert m >= 1
+  n = size(G{1}, 1)
+
+  if method == "DCS"
+    p, X, Y, t = dcs_lp(G)
+  elseif method == "MIN"
+    H = dcs_intersection_graph(G)
+    p, X, Y, t =  charikar_lp(H)
+  elseif method == "AVG"
+    H = dcs_avg_graph(G)
+    p, X, Y, t = charikar_lp(H)
+  else
+    error("Undefined method: $method") #  ('dcs', 'charikar', 'weighted')"
   end
-  return charikar_lp(G)
-  
+  S = extract_primal_solution(Y)
+  d = common_subgraph_density(S)
+  return (S, d, t)
 end
+
+
+# function dcs_charikar_lp{T}(H::Array{SparseMatrixCSC{T, Int64}, 1})
+#   m = length(H)
+#   n = size(H[1], 1)
+#   G = spzeros(T, n, n)
+
+#   ii, jj = findn(H[1])
+#   for k=1:length(ii)
+#     cr = ii[k]
+#     cc = jj[k]
+#     G[cr, cc] = H[1][cr, cc]
+#     for j=2:m
+#       G[cr, cc] = min(G[cr, cc], H[j][cr, cc])
+#     end
+#   end
+#   return charikar_lp(G)
+
+  # end
