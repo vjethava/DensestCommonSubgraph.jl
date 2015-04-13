@@ -7,7 +7,7 @@ using DataFrames
 using ProgressMeter
 FactCheck.onlystats(true)
 FactCheck.setstyle(:default)
-
+using HDF5, JLD
 
 function test_instances2(m::Integer, n::Integer, p::Real, k::Integer)
   G = Graph[]
@@ -19,10 +19,8 @@ function test_instances2(m::Integer, n::Integer, p::Real, k::Integer)
 end
 
 function test_dcs_lp(nt::Integer=10 )
-  m = 3
-  n = rand(10:20)
-  p = rand()/2
-  k = rand(1:ifloor(n/2))
+  m = 1
+  Z = zeros(nt, m)
   D = zeros(nt, 4)  # Density of extracted subgraph
   V = zeros(nt, 4)  # LP optimum
   S = cell(nt, 4)   # subgraphs extracted
@@ -30,10 +28,18 @@ function test_dcs_lp(nt::Integer=10 )
   X = DataFrame(GID=Int64[] , RelDensity=Float64[], RelOptVal=Float64[], Jaccard=Float64[], Method=String[])
   p_bar = Progress(nt, 1, "Computing initial pass...", 50)
   for i=1:nt
+    n = 20
+    p = 0.5
+    k = rand(1:ifloor(n/2))
     G = test_instances2(m, n, p, k);
     I[i] = G
     (s_true, d_val ) = dcs_parallel(G, 2);
     d_true = common_subgraph_density(G, s_true)
+    for jj=1:m
+      Z[i, jj] = subgraph_density(G[jj], s_true)
+      println("i: $i j: $jj $(Z[i, jj])")
+    end
+
     # @fact d_true => roughly(d_val/2.0)
     # println("OPT: density: $(lpad(d_true, 20, ' ')) subgraph: $s_true")
 
@@ -48,7 +54,9 @@ function test_dcs_lp(nt::Integer=10 )
     D[i, 2] = d_dcs
     V[i, 2] = t_dcs
     S[i, 2] = s_dcs
-
+    if t_dcs > d_val
+      println("i: $i integrality gap: dcs: $t_dcs opt: $d_val  ratio: $(t_dcs/d_val)")
+    end
     X = vcat(X, DataFrame(GID=i, RelDensity = d_dcs/d_true , RelOptVal=t_dcs/d_val, Jaccard=length(intersect(s_dcs , s_true))/length(union(s_dcs, s_true)), Method="DCS"))
 
     # @fact d_dcs => less_than_or_equal(d_true)
@@ -83,7 +91,7 @@ function test_dcs_lp(nt::Integer=10 )
     # println("\n")
     next!(p_bar)
   end
-  return (I, X, S);
+  return (I, X, S, Z)
 end
 
 # function evaluate_primal(G::GraphVec, methods::String[]= LP_METHODS)
@@ -104,10 +112,11 @@ end
 # end
 
 nt = 100;
-(I, X, S) = test_dcs_lp(nt) ;
+(I, X, S, Z) = test_dcs_lp(nt)
+legend = "I: graph instances, S: subgraphs returned by OPT,DCS,LP_min,LP_avg, X: stats, Z: densities by S_opt"
 using HDF5, JLD
-@save "temp1.jld" I X S
+@save "output_test_dcs_lp_2.jld" I X S Z legend
 p1 = plot(X, xgroup="Method", x="RelOptVal", Geom.subplot_grid(Geom.histogram), Guide.xlabel(nothing), Guide.title("Ratio of LP optimum to density of S_{OPT}"), color="Method")
 p2 = plot(X, xgroup="Method", x="RelDensity", Geom.subplot_grid(Geom.histogram), Guide.xlabel(nothing), Guide.title("Ratio of densities of subgraph obtained by LP rounding to S_{OPT}"), color="Method")
-draw(PDF("p1.pdf", 9inch, 6inch), p1)
-draw(PDF("p2.pdf", 9inch, 6inch), p2)
+draw(PDF("p1a.pdf", 9inch, 6inch), p1)
+draw(PDF("p2a.pdf", 9inch, 6inch), p2)

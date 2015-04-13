@@ -1,10 +1,13 @@
-export dcs_lp, charikar_lp, dcs_lp_extract, extract_primal_solution
+export dcs_lp, charikar_lp, dcs_lp_extract, extract_primal_solution, charikar_JuMP_LP
 export LP_METHODS
+
+using JuMP
+using Gurobi
 using Convex
-using SCS
 LP_METHODS=["DCS"; "MIN"; "AVG"]
 
-set_default_solver(SCSSolver(verbose=0))
+
+
 
 function dcs_convert{T}(G::Array{SparseMatrixCSC{T, Int64}, 1})
   m = length(G)
@@ -54,6 +57,7 @@ end
 
 
 function dcs_lp{T}(G::Array{SparseMatrixCSC{T, Int64}, 1})
+
   m = length(G)
   n = size(G[1], 1)
   nz = Int64[]
@@ -179,11 +183,61 @@ function faster_dcs_lp{T}(G::Array{SparseMatrixCSC{T, Int64}, 1})
   return problem, X, Y, t
 end
 
+# function DCSP(G::Graph[])
+#   m = length(G)
+#   n = size(G[1], 1)
+#   R = Model(solver=GurobiSolver(OutputFlag=1))
+#   @defVar(R, Y[1:n] >= 0)
+#   for i=1:m
+#     [gi, gj] = findn(G[i])
+#     ne = length(gi)
+#     @defVar(R, X[i=i, j=1:ne] >= 0)
 
+# end
 
+function charikar_JuMP_LP(G::Graph)
+  n = size(G, 1)
+  tic()
+  ii, jj = findn(G)
+  ne = length(ii)
+  println("graph with $n nodes and $ne edges. Setting up Charikar LP ... ")
+  R = Model(solver=GurobiSolver(OutputFlag=0))
+  @defVar(R, X[1:ne] >= 0)
+  @defVar(R, Y[1:n] >= 0)
+  @addConstraint(R, gamma, sum{Y[i], i=1:n} <= 1)
+
+  @addConstraint(R, alpha[k=1:ne], X[k] <= Y[ ii[k] ] )
+  @addConstraint(R, beta[k=1:ne], X[k] <= Y[ jj[k] ] )
+#   for k=1:ne
+#     crow = ii[k]
+#     ccol = jj[k]
+#     @addConstraint(R, X[crow, ccol] <= Y[crow])
+#     @addConstraint(R, X[crow, ccol] <= Y[ccol])
+#   end
+  @setObjective(R, Max, sum{X[k], k=1:ne })
+  t_elapsed = toc();
+  println("Completed setup, starting to solve LP with Gurobi ")
+  status = solve(R);
+  if status == :Optimal
+    println("solved LP successfully, returning primal variables")
+  end
+
+  t = R.objVal
+  X1 = spzeros(n, n)
+  Y1 = spzeros(n, 1)
+  for k=1:ne
+    X1[ii[k], jj[k]]= getValue(X[k])
+  end
+  for j=1:n
+    Y1[j] = getValue(Y[j])
+  end
+  return X1, Y1, t, status
+end
 
 
 function charikar_lp{T}(G::SparseMatrixCSC{T, Int64})
+
+  set_default_solver(GurobiSolver())
   n = size(G, 1)
   X = Variable(n, n, Positive())
   Y = Variable(n, Positive())
@@ -207,7 +261,7 @@ end
 
 
 function extract_primal_solution(Y)
-  V = [j > 1e-6 for j in Y]
+  V = [j > 0.0 for j in Y]
   S = find(V)
   return S
 end
