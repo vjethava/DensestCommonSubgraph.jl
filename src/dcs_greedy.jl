@@ -9,6 +9,6 @@ end
 
 function charikar_greedy{T}(G::SparseMatrixCSC{T, Int64})
   n = size(G, 1)
-  deg = sum
+  deg = sum()
 
 end
