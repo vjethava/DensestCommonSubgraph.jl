@@ -1,6 +1,6 @@
 # ECML Poster
 
-ETH Poster style copied from http://www.pletscher.org/
+ETH Poster style copied from https://github.com/ppletscher/beamerthemeposterzurich 
 
 - `PosterVersion2.pdf` contains fonts in included images fixed manually using Adobe Illustrator.
 - `PosterEcml15.tex` is the main file
