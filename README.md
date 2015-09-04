@@ -74,3 +74,4 @@ Compilation command: `latexmk -pdf -pvc -xelatex PosterEcml15.tex`
 * local branch `master`
 * remote branch `poster`
 * https://bitbucket.org/vjethava/densestcommonsubgraph/src/ce72617acdfb?at=poster
+* Command: `git push bitbucket master:poster`
