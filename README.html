@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<title>README.html</title>
+
+</head>
+
+<body>
+
+<h1>ECML Poster</h1>
+
+<p>ETH Poster style copied from http://www.pletscher.org/</p>
+
+<ul>
+<li><code>PosterVersion2.pdf</code> contains fonts in included images fixed manually using Adobe Illustrator.</li>
+<li><code>PosterEcml15.tex</code> is the main file</li>
+</ul>
+
+<p>Compilation command: <code>latexmk -pdf -pvc -xelatex PosterEcml15.tex</code></p>
+
+<h2>Special formatting</h2>
+
+<ol>
+<li><p>Uses <code>Garamond</code> and  <code>Cambria Math</code> for correct printing</p>
+
+<pre><code>\usefonttheme{professionalfonts}
+\usepackage{xltxtra}
+\usepackage{unicode-math}
+\setmathfont{Cambria Math}
+\usepackage{fontspec}
+
+
+% Font specification here. 
+\setmainfont{Garamond}
+\setsansfont{Garamond}
+\setmonofont{Consolas}
+\setmathrm{Cambria Math}
+\setmathsf{Cambria Math}
+\setmathtt{Cambria Math}
+</code></pre></li>
+<li><p>Figures generated using TikZ <code>graphs</code> library, see: </p>
+
+<ol>
+<li><p><code>graphset-images</code> The images in this directory have to be
+compiled using <code>lualatex</code>. See <code>generate_graphset_images.sh</code> in
+this subdirectory: <code>lualatex -shell-escape  -interaction=nonstopmode dcs-lp.tex</code></p></li>
+<li><p><code>metabolic-images</code> This contains the images of metabolic
+reaction networks.</p></li>
+</ol></li>
+</ol>
+
+</body>
+</html>

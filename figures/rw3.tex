@@ -1,0 +1,89 @@
+% RW2 - Figure showing LP coordinates 
+
+\documentclass{minimal}
+
+\usepackage{tikz}
+\usepackage{amsmath}
+
+% \usepackage[paperwidth=1cm,paperheight=1cm,hmargin=0cm,vmargin=0cm]{geometry}
+% Activate it
+
+\usetikzlibrary{positioning}
+\usetikzlibrary{shapes}
+\usetikzlibrary{arrows}
+\usetikzlibrary{calc}
+\usetikzlibrary{3d}
+
+\usepackage[active,tightpage,border=10pt]{preview}
+\PreviewEnvironment{tikzpicture} 
+\setlength\PreviewBorder{5pt}%
+
+\begin{document}
+\begin{tikzpicture}[rotate=0,x={(0.985cm,-0.174cm)},y={(-0.906cm,-0.423cm)},z={(0cm,1cm)}]
+% \begin{tikzpicture}
+\tikzset{xzplane/.style={canvas is xz plane at y=#1,very thin}}
+\tikzset{yzplane/.style={canvas is yz plane at x=#1,very thin}}
+\tikzset{xyplane/.style={canvas is xy plane at z=#1,very thin}}
+
+
+
+  \tikzset{VertexStyle/.style = {shape          = circle,
+                                 ball color     = blue!40,
+                                 text           = black,
+                                 inner sep      = 2pt,
+                                 outer sep      = 0pt,
+                                 minimum size   = 12 pt}}
+  \tikzset{EdgeStyle/.style   = {thick,
+                                 double          = orange,
+                                 double distance = 1pt}}
+\draw[yzplane=0,fill=blue!30,opacity=0.2] (-3,-3.0) -- (3,-3.0) -- (3,3.0) -- (-3,3.0) -- cycle;
+\draw[yzplane=5,fill=blue!30,opacity=0.2] (-3,-3.0) -- (3,-3.0) -- (3,3.0) -- (-3,3.0) -- cycle;
+\draw[yzplane=10,fill=blue!30,opacity=0.2] (-3,-3.0) -- (3,-3.0) -- (3,3.0) -- (-3,3.0) -- cycle;
+
+% \draw[color=green!30,fill=green!50,opacity=0.5]  (0,0,0) -- (10,0,0) ;
+% \draw[color=green!30,fill=green!50,opacity=1.0]  (5,0,0) -- (3,-0.5,-2) -- (6, -0.5, -1.5) -- cycle; 
+% \draw[color=green!30,fill=green!50,opacity=1.0]  (10,0,0) -- (8,-0.5,-2) -- (11, -0.5, -1.5) -- cycle; 
+
+% \draw[color=red!30,fill=red!30,opacity=0.5]  (0,0,0) -- (10,0,0) -- (11, -0.5, -1.5) -- (1,  -0.5, -1.5) -- cycle; 
+% \draw[color=yellow!50,fill=yellow!50,opacity=0.5]   (-2,  -0.5, -2)   -- (8, -0.5, -2) -- (11, -0.5, -1.5) -- (1,  -0.5, -1.5) -- cycle; 
+
+\begin{scope}[canvas is yz plane at x=5,very thin]
+\node[VertexStyle] (A) {A}; 
+\node[VertexStyle] (B) [below left = of A] {B}; 
+\node[VertexStyle] (C) [below right = of A] {C}; 
+\node[VertexStyle] (D)  [above left = of A]  {D}; 
+ \node[VertexStyle] (E) [above right = of A] {E}; 
+\node (g2) [above = of D] {$\mathbf{G^{(2)}}$}; 
+\node (eq1) [above = of E] {$\mathbf{\sum x_{ij}^{(2)} \ge t}$};
+\node (eq2) [below right = of B] {$\mathbf{x_{ab}^{(2)} \le y_{a},\; x_{ab}^{(2)} \le y_{b},\; \ldots}$};
+
+\draw[EdgeStyle] (A) -- (B) node [near end,above=3pt] {$\mathbf{x_{ab}^{(2)}} $} ; 
+\draw[EdgeStyle] (C) -- (B); 
+\draw[EdgeStyle] (A) -- (C); 
+\draw[EdgeStyle] (E) -- (A); 
+\end{scope}
+
+
+
+\begin{scope}[canvas is yz plane at x=0,very thin]
+\node[VertexStyle] (A) {A}; 
+\node[VertexStyle] (B) [below left = of A] {B}; 
+\node[VertexStyle] (C) [below right = of A] {C}; 
+\node[VertexStyle] (D)  [above left = of A]  {D}; 
+\node[VertexStyle] (E) [above right = of A] {E}; 
+\node (eq1) [above = of E] {$\mathbf{\sum x_{ij}^{(1)} \ge t}$};
+\node (eq2) [below right= of B] {$\mathbf{x_{ab}^{(1)} \le y_{a},\; x_{ab}^{(1)} \le y_{b},\; \ldots}$};
+\node (g1) [above = of D] {$\mathbf{ G^{(1)}}$}; 
+\draw[EdgeStyle] (A) -- (B) node [near end,above=3pt] {$\mathbf{x_{ab}^{(1)}}$}; 
+\draw[EdgeStyle] (C) -- (B) node [midway,below=3pt] {$\mathbf{x_{bc}^{(1)}}$};  
+\draw[EdgeStyle] (A) -- (C) node [near end,above=3pt] {$\mathbf{x_{ac}^{(1)}}$};  
+\draw[EdgeStyle] (A) -- (D) node [near start,above=3pt] {$\mathbf{x_{ad}^{(1)}}$};  
+\draw[EdgeStyle] (E) -- (D) node [midway,above=3pt] {$\mathbf{x_{de}^{(1)}}$}; 
+% \node (eq4) [above=of eq1] {$\sum_{i\in V} y_{i} \le 1 $};
+% \node (eq3) [above=of eq1] {$\mathbf{\max_{t} t ,} $ s.t. $\mathbf{\sum_{i\in V} y_{i} \le 1}$ and };
+\end{scope}
+
+
+
+\end{tikzpicture}
+\end{document}

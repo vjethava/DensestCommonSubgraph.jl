@@ -1,0 +1,136 @@
+% command to generate figures
+% pdflatex -shell-escape -synctex=1 -interaction=nonstopmode nw2.tex
+% 
+
+\documentclass[class=minimal,border=1pt]{standalone}
+% \documentclass{article}
+\usepackage{tikz}
+
+\usetikzlibrary{calc,matrix,shapes,positioning,fadings}
+
+\tikzfading[name=fade out,
+inner color=transparent!0,
+outer color=transparent!100]
+
+
+\newcommand{\convexpath}[2]{
+[   
+    create hullnodes/.code={
+        \global\edef\namelist{#1}
+        \foreach [count=\counter] \nodename in \namelist {
+            \global\edef\numberofnodes{\counter}
+            \node at (\nodename) [draw=none,name=hullnode\counter] {};
+        }
+        \node at (hullnode\numberofnodes) [name=hullnode0,draw=none] {};
+        \pgfmathtruncatemacro\lastnumber{\numberofnodes+1}
+        \node at (hullnode1) [name=hullnode\lastnumber,draw=none] {};
+    },
+    create hullnodes
+]
+($(hullnode1)!#2!-90:(hullnode0)$)
+\foreach [
+    evaluate=\currentnode as \previousnode using \currentnode-1,
+    evaluate=\currentnode as \nextnode using \currentnode+1
+    ] \currentnode in {1,...,\numberofnodes} {
+-- ($(hullnode\currentnode)!#2!-90:(hullnode\previousnode)$)
+  let \p1 = ($(hullnode\currentnode)!#2!-90:(hullnode\previousnode) - (hullnode\currentnode)$),
+    \n1 = {atan2(\y1,\x1)}, 
+    \p2 = ($(hullnode\currentnode)!#2!90:(hullnode\nextnode) - (hullnode\currentnode)$),
+    \n2 = {atan2(\y2,\x2)},
+    \n{delta} = {-Mod(\n1-\n2,360)}
+  in 
+    {arc [start angle=\n1, delta angle=\n{delta}, radius=#2]}
+}
+-- cycle
+}
+
+
+
+% Load the library
+\usetikzlibrary{graphs, graphdrawing, external}
+\usegdlibrary{circular}
+\tikzset{external/system call={lualatex \tikzexternalcheckshellescape --output-format=dvi -halt-on-error -interaction=batchmode -jobname "\image" "\texsource"}}
+\tikzexternalize
+
+\begin{document}
+
+% % Figure 0 - Basic Figure with no hidden objects 
+% \begin{tikzpicture}[hn/.style={draw,circle,gray, opaque=0.25},
+% vn/.style={draw,circle, thick},
+% ve/.style={blue,very thick}, 
+% he/.style={gray,opaque=0.25,very thick}
+% ]
+% \graph [
+% nodes=vn,
+% edges=ve,
+% simple necklace layout, 
+% ] { 
+% 5 [hn], 
+% 6 [hn],
+% {
+% 1 -- 2 , 
+% 1 -- 3,
+% 4 -- 2, 
+% 1 -- 4, 
+% 3 -- 4,
+% 4 --[he] 5, 
+% 3 --[he] 5, 
+% 6 --[he] 5, 
+% }
+% }; 
+% \end{tikzpicture}
+
+
+% First Graph 
+\newcommand{\GA}{ 
+\begin{tikzpicture}
+[
+hn/.style={draw,circle,gray},
+vn/.style={draw,circle, thick},
+ve/.style={blue,very thick}, 
+he/.style={gray,opaque=0.25,very thick},
+]
+\graph [
+nodes=vn,
+edges=ve,
+simple necklace layout, 
+] { 
+
+{ \s [hn,source edge style=he,target edge style=he] , 
+ %4 [hn,source edge style=he,target edge style=he] , 
+ }
+
+{
+1 -- 2 , 
+1 -- 3,
+4 -- 2, 
+1 -- 4, 
+3 -- 4,
+4 --5, 
+3 -- 5, 
+6 -- 5, 
+}
+} ;
+\end{tikzpicture}
+}
+
+% \begin{tikzpicture}[remember picture]
+% \node {\includegraphics[height=0.05\lineheight]{rn-network}} ; 
+% \end{tikzpicture}
+
+
+% \begin{tikzpicture}[remember picture]
+% \node {\includegraphics[height=0.05\textheight]{rn-network}} ; 
+% \fill [blue,path fading=fade out] (-0.5, -1) rectangle (0.5, 1); 
+% \end{tikzpicture}
+
+
+\begin{tikzpicture}[remember picture]
+\node {\includegraphics{rn-network}} ; 
+\fill [green,path fading=fade out] (-2.5, -0.5) rectangle (-0.5, 1); 
+\fill [red,path fading=fade out] (0, -1) rectangle (1.5, 0); 
+\end{tikzpicture}
+
+
+
+\end{document}

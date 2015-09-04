@@ -1,0 +1,110 @@
+% \documentclass[class=minimal,border=1pt]{standalone}
+\documentclass{article}
+% \usepackage[mode=buildnew]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{shapes,graphs,graphdrawing,external}
+\usegdlibrary{circular}
+\usepackage{fontspec}
+\setmainfont{Adobe Garamond}
+
+\tikzexternalize
+\tikzset{external/system call={lualatex \tikzexternalcheckshellescape --output-format=dvi -halt-on-error -interaction=batchmode -jobname "\image" "\texsource"}}
+\tikzset{external/force remake=true} 
+
+\begin{document}
+\begin{tikzpicture}
+[
+hn/.style={draw,circle,gray},
+vn/.style={draw,circle, thick},
+ve/.style={blue,very thick}, 
+he/.style={gray,thick},
+every edge quotes/.style={font=\tiny},
+]
+\graph [nodes=vn,edges=ve,simple necklace layout] { 
+ 1, 2, 3, 4, 5, 6,
+{
+% 1 --[edge node={node{auto,sloped,above}{x}}] 2, 
+1 --[edge node={node[auto,sloped,above]{\tiny $x_{12}$}}] 2,
+1 --[edge node={node[near start,sloped,below]{\tiny $x_{13}$}}] 3,
+4 --[edge node={node[auto,sloped,above]{\tiny $x_{24}$}}] 2, 
+1 --[edge node={node[near start,sloped,above]{\tiny $x_{14}$}}] 4, 
+3 --[edge node={node[auto,sloped,below]{\tiny $x_{34}$}}] 4,
+4 --[edge node={node[auto,sloped,below]{\tiny $x_{45}$}}] 5, 
+3 --[edge node={node[near end,sloped,above]{\tiny $x_{35}$}}] 5, 
+6 --[edge node={node[auto,sloped,above]{\tiny $x_{56}$}}] 5, 
+}
+} ;
+\end{tikzpicture}
+
+% Figure 0 - Basic Figure with 5 hidden
+\begin{tikzpicture}[hn/.style={draw,circle,gray},
+vn/.style={draw,circle, thick},
+ve/.style={red,very thick}, 
+he/.style={gray, thick}
+]
+\graph [
+nodes=vn,
+edges=ve,
+simple necklace layout, 
+] { 
+1, 2, 3, 4,  5 ,  6,   
+{
+1 --[edge node={node[auto,sloped,above]{\tiny $x_{12}$}}] 2,
+1 --[edge node={node[near start,sloped,below]{\tiny $x_{13}$}}] 3,
+1 --[edge node={node[auto,sloped,above]{\tiny $x_{16}$}}] 6,
+2 --[edge node={node[auto,sloped,below]{\tiny $x_{23}$}}] 3, 
+2 --[edge node={node[near end,sloped,above]{\tiny $x_{24}$}}] 4, 
+3 --[edge node={node[auto,sloped,below]{\tiny $x_{34}$}}] 4,
+3 --[edge node={node[near end,sloped,below]{\tiny $x_{36}$}}] 6,
+}
+}; 
+\end{tikzpicture}
+
+% This is the example of integrality gap 
+\begin{tikzpicture}
+[hn/.style={draw,circle,gray},
+vn/.style={draw,circle, thick},
+ve/.style={blue,very thick}, 
+he/.style={gray, thick}
+]
+\graph [
+nodes=vn,
+edges=ve,
+simple necklace layout, 
+] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 
+{ 1 -- 2, 
+  4 -- 5,
+  1 -- 9, 
+  7 -- 9,
+}
+};
+\end{tikzpicture}
+
+% This is the example of integrality gap 
+\begin{tikzpicture}
+[hn/.style={draw,circle,gray},
+vn/.style={draw,circle, thick},
+ve/.style={red,very thick}, 
+he/.style={gray, thick}
+]
+\graph [
+nodes=vn,
+edges=ve,
+simple necklace layout, 
+] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 
+{  1 -- 2, 
+ 1 -- 3, 
+1 -- 4, 
+1 -- 5, 
+2 -- 3, 
+2 -- 4, 
+2 -- 5, 
+3 -- 4, 
+3 -- 5, 
+4 -- 5, 
+8 -- 9,  
+}
+};
+\end{tikzpicture}
+
+\end{document}
