@@ -68,10 +68,7 @@ Compilation command: `latexmk -pdf -pvc -xelatex PosterEcml15.tex`
             }
             % usage: \draw[violet,thick] \convexpath{1,4,3,2}{0.4cm};
 	
-## Remote branch
-
+## Bitbucket details
 * `DensestCommonSubgraph` repository
 * local branch `master`
-* remote branch `poster`
-* https://bitbucket.org/vjethava/densestcommonsubgraph/src/ce72617acdfb?at=poster
 * Command: `git push bitbucket master:poster`
