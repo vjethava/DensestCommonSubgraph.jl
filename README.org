@@ -1,6 +1,0 @@
-# DensestCommonSubgraph
-
-[![Build Status](https://travis-ci.org/vjethava/DensestCommonSubgraph.jl.svg?branch=master)](https://travis-ci.org/vjethava/DensestCommonSubgraph.jl)
-
-This project contains code for finding densest common subgraph among a set of 
-graphs $G=(V, E^i)$ defined on a common node set $V$
